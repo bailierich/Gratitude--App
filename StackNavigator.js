@@ -10,6 +10,7 @@ import useAuth from "./hooks/useAuth";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import JournalEntryScreen from "./screens/JournalEntryScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -70,6 +71,7 @@ const StackNavigator = () => {
               component={HomeTabs}
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="Journal Entry" component={JournalEntryScreen} />
           </Stack.Group>
           <Stack.Group screenOptions={{ presentation: "modal" }}>
             <Stack.Screen name="Modal" component={SettingsScreen} />

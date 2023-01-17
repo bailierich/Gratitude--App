@@ -30,18 +30,15 @@ const LoginScreen = () => {
             source={require("../images/GraciousAppLogo.png")}
           />
         </View>
-        <View className="flex-row justify-center">
-          <Text className="text-5xl font-bold mb-20">Sign In</Text>
-        </View>
-        <View>
-          <Text className="text-xl font-bold">Email</Text>
+        <View className="mt-28">
+          <Text className="text-xl font-medium">Email</Text>
           <TextInput
             value={email}
             onChangeText={setEmail}
             className="text-lg mb-5"
             placeholder="Enter Your Email"
           />
-          <Text className="text-xl font-bold">Password</Text>
+          <Text className="text-xl font-medium">Password</Text>
           <TextInput
             value={password}
             onChangeText={setPassword}
@@ -53,13 +50,13 @@ const LoginScreen = () => {
           className="flex-row justify-center bg-black p-2 my-5 rounded-md"
           onPress={() => signIn(email, password)}
         >
-          <Text className="text-xl font-bold text-white">Login</Text>
+          <Text className="text-xl font-medium text-white">Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-row justify-center"
           onPress={() => navigation.navigate("SignUpScreen")}
         >
-          <Text className="text-xl font-bold my-5">Create An Account</Text>
+          <Text className="text-xl font-medium mt-2">Create An Account</Text>
         </TouchableOpacity>
       </SafeAreaView>
     </ImageBackground>

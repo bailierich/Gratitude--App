@@ -106,12 +106,12 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    getGratitudes();
-
     fetch("https://www.affirmations.dev")
       .then((response) => response.json())
       .then((json) => setAffirmation(json))
       .catch((error) => console.error(error));
+
+    getGratitudes();
 
     console.log(affirmation);
   }, []);
@@ -134,7 +134,7 @@ const HomeScreen = () => {
         </View>
 
         <View className="flex-row justify-center my-5">
-          <Text className="text-2xl font-bold">Hello {user.email}</Text>
+          <Text className="text-xl font-bold">Hello {user.email}</Text>
         </View>
 
         <View className="flex-row items-middle justify-between mt-5">
@@ -157,7 +157,7 @@ const HomeScreen = () => {
                     className="my-4 p-4 rounded-lg bg-purple-50"
                     key={gratitude.id}
                   >
-                    <Text className="text-xl ">
+                    <Text className="text-sm ">
                       I'm Grateful For {gratitude.gratitude}
                     </Text>
                   </View>
@@ -168,14 +168,10 @@ const HomeScreen = () => {
         </ScrollView>
         <View
           style={styles.shadow}
-          className="my-10 bg-white border-purple-50 border-solid border-2 p-8 rounded-lg"
+          className="top-7 bg-white border-purple-50 border-solid border-2 p-8 rounded-lg"
         >
-          <Text className="font-bold text-purple-800 text-3xl">
-            Your Daily Reminder
-          </Text>
-
-          <View className="mt-5">
-            <Text className="text-lg">{affirmation.affirmation}</Text>
+          <View>
+            <Text className="text-base">{affirmation.affirmation}</Text>
           </View>
         </View>
       </SafeAreaView>
