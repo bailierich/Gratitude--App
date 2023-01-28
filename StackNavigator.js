@@ -35,8 +35,8 @@ const HomeTabs = () => {
             <Ionicons name={iconName} size={size} color={color} />
           );
         },
-        tabBarActiveTintColor: "white",
-        tabBarInactiveTintColor: "#CBC3E3",
+        tabBarActiveTintColor: "#ffdd32",
+        tabBarInactiveTintColor: "white",
         tabBarStyle: { height: 90, backgroundColor: "black" },
       })}
     >

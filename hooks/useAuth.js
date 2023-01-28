@@ -13,6 +13,7 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [loadingInitial, setLoadingInitial] = useState(true);
 
   const signUp = (email, password) => {
     createUserWithEmailAndPassword(auth, email, password)
@@ -58,13 +59,16 @@ export const AuthProvider = ({ children }) => {
         } else {
           setUser(null);
         }
+
+        setLoadingInitial(false);
       }),
+
     []
   );
 
   return (
     <AuthContext.Provider value={{ user, signIn, signUp, logout, error }}>
-      {children}
+      {!loadingInitial && children}
     </AuthContext.Provider>
   );
 };

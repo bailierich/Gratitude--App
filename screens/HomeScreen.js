@@ -9,15 +9,17 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import useAuth from "../hooks/useAuth";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
+  onSnapshot,
   query,
   serverTimestamp,
   setDoc,
@@ -25,6 +27,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase.config";
 import Swipeable from "react-native-gesture-handler/Swipeable";
+import LoadingScreen from "../components/LoadingScreen";
 
 const HomeScreen = () => {
   const { user, logout } = useAuth();
@@ -57,6 +60,7 @@ const HomeScreen = () => {
       .then(() => {
         console.log("Gratitude Saved");
         setGratitude("");
+        getGratitudes();
       })
       .catch((error) => {
         alert(error.message);
@@ -70,21 +74,25 @@ const HomeScreen = () => {
       }));
       setGratitudes(newData);
       console.log(gratitudes);
+      setLoading(false);
     });
   };
 
-  const RightActions = (progress, dragX) => {
-    const scale = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [0.7, 0],
-    });
+  const deleteGratitude = async (id) => {
+    await deleteDoc(doc(db, "gratitudes", id))
+      .then(getGratitudes())
+      .catch((error) => alert(error));
+  };
+
+  const RightActions = (id) => {
     return (
       <>
         <TouchableOpacity
+          onPress={() => deleteGratitude(id)}
           style={{
             margin: 10,
             borderRadius: 30,
-            backgroundColor: "#0A014F",
+            backgroundColor: "#ffdd32",
             justifyContent: "center",
             marginTop: 20,
             marginBottom: 20,
@@ -93,12 +101,12 @@ const HomeScreen = () => {
         >
           <Animated.Text
             style={{
-              color: "white",
+              color: "black",
               fontWeight: "600",
               paddingHorizontal: 4,
             }}
           >
-            Delete
+            delete
           </Animated.Text>
         </TouchableOpacity>
       </>
@@ -111,17 +119,27 @@ const HomeScreen = () => {
       .then((json) => setAffirmation(json))
       .catch((error) => console.error(error));
 
-    getGratitudes();
+    const unsub = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+      if (!snapshot.exists) {
+        navigation.navigate("Modal");
 
-    console.log(affirmation);
+        console.log("this ran");
+      } else {
+        console.log("this is running");
+      }
+    });
+    getGratitudes();
+    return () => unsub();
   }, []);
 
-  return (
+  return loading ? (
+    <LoadingScreen />
+  ) : (
     <View className="bg-white flex-1">
       <SafeAreaView className="mx-5">
         <View className="flex-row justify-between mt-3">
           <TouchableOpacity onPress={logout}>
-            <AntDesign name="logout" size={30} />
+            <Ionicons name="md-log-out" size={35} color={"#ffdd32"} />
           </TouchableOpacity>
 
           <Image
@@ -129,7 +147,7 @@ const HomeScreen = () => {
             source={require("../images/GraciousInsignia.png")}
           />
           <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-            <AntDesign name="setting" size={30} />
+            <Ionicons name="settings" size={30} color={"#ffdd32"} />
           </TouchableOpacity>
         </View>
 
@@ -137,7 +155,7 @@ const HomeScreen = () => {
           <Text className="text-xl font-bold">Hello {user.email}</Text>
         </View>
 
-        <View className="flex-row items-middle justify-between mt-5">
+        <View className="flex-row items-middle justify-between mx-4 mt-5">
           <TextInput
             className="text-xl h-8"
             placeholder="Today I'm Grateful For..."
@@ -145,33 +163,41 @@ const HomeScreen = () => {
             onChangeText={setGratitude}
           />
           <TouchableOpacity>
-            <AntDesign name="plus" size={25} onPress={addGratitude} />
+            <AntDesign
+              name="pluscircle"
+              color={"#ffdd32"}
+              size={25}
+              onPress={addGratitude}
+            />
           </TouchableOpacity>
         </View>
-        <ScrollView className="h-64 mt-10">
-          {gratitudes.map((gratitude, index) => {
+        <ScrollView keyboardDismissMode="interactive" className="h-64 mt-10">
+          {gratitudes.map((gratitude) => {
             return (
-              <View>
-                <Swipeable renderRightActions={RightActions}>
-                  <View
-                    className="my-4 p-4 rounded-lg bg-purple-50"
-                    key={gratitude.id}
-                  >
-                    <Text className="text-sm ">
-                      I'm Grateful For {gratitude.gratitude}
-                    </Text>
-                  </View>
-                </Swipeable>
-              </View>
+              <Swipeable
+                key={gratitude.id}
+                renderRightActions={() => RightActions(gratitude.id)}
+              >
+                <View
+                  className="my-4 p-4 rounded-lg "
+                  style={{ backgroundColor: "#fffae5" }}
+                >
+                  <Text className="text-sm ">
+                    I'm Grateful For {gratitude.gratitude}
+                  </Text>
+                </View>
+              </Swipeable>
             );
           })}
         </ScrollView>
         <View
           style={styles.shadow}
-          className="top-7 bg-white border-purple-50 border-solid border-2 p-8 rounded-lg"
+          className="top-7 justify-center p-8 rounded-lg"
         >
           <View>
-            <Text className="text-base">{affirmation.affirmation}</Text>
+            <Text className=" text-center text-base">
+              {affirmation.affirmation}
+            </Text>
           </View>
         </View>
       </SafeAreaView>
@@ -181,7 +207,8 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   shadow: {
-    shadowColor: "#000",
+    backgroundColor: "#ffd400",
+    shadowColor: "#fffae5",
     shadowOffset: {
       width: 0,
       height: 1,

@@ -28,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "98e1d257-b8d1-4728-86af-debb415b7f3c"
+      }
+    },
+    "owner": "bailierich"
   }
 }
