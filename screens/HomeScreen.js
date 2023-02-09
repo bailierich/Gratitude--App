@@ -18,6 +18,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   query,
@@ -34,9 +35,12 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [gratitude, setGratitude] = useState("");
   const [gratitudes, setGratitudes] = useState([]);
-  const [affirmation, setAffirmation] = useState([]);
+  const [affirmation, setAffirmation] = useState(null);
   const currentDate = new Date();
   const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState([]);
+  const userRef = collection(db, "users");
+  const userQ = query(userRef, where("id", "==", user.uid));
 
   const currentDayOfMonth = currentDate.getDate();
   const currentMonth = currentDate.getMonth(); // Be careful! January is 0, not 1
@@ -51,6 +55,19 @@ const HomeScreen = () => {
     where("date", "==", dateString),
     where("id", "==", user.uid)
   );
+
+  const fetchScripture = () => {
+    const options = { method: "GET", headers: { accept: "application/json" } };
+    fetch(
+      "https://beta.ourmanna.com/api/v1/get?format=json&order=random",
+      options
+    )
+      .then((response) => response.json())
+      .then((json) => setAffirmation(json))
+      .then(() => setLoading(false))
+      .catch((error) => console.log(error));
+  };
+
   const addGratitude = () => {
     addDoc(collection(db, "gratitudes"), {
       id: user.uid,
@@ -73,9 +90,18 @@ const HomeScreen = () => {
         id: doc.id,
       }));
       setGratitudes(newData);
-      console.log(gratitudes);
-      setLoading(false);
     });
+  };
+
+  const getUserData = async () => {
+    await getDocs(userQ)
+      .then((querySnapshot) => {
+        const newData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+        }));
+        setUserData(newData);
+      })
+      .catch((error) => console.log(error));
   };
 
   const deleteGratitude = async (id) => {
@@ -114,22 +140,22 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    fetch("https://www.affirmations.dev")
-      .then((response) => response.json())
-      .then((json) => setAffirmation(json))
-      .catch((error) => console.error(error));
-
-    const unsub = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+    /*  const unsub = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
       if (!snapshot.exists) {
         navigation.navigate("Modal");
 
         console.log("this ran");
       } else {
         console.log("this is running");
+        getUserData();
       }
-    });
+    }); */
+
     getGratitudes();
-    return () => unsub();
+
+    fetchScripture();
+
+    /*  return () => unsub(); */
   }, []);
 
   return loading ? (
@@ -139,7 +165,7 @@ const HomeScreen = () => {
       <SafeAreaView className="mx-5">
         <View className="flex-row justify-between mt-3">
           <TouchableOpacity onPress={logout}>
-            <Ionicons name="md-log-out" size={35} color={"#ffdd32"} />
+            <Ionicons name="md-log-out" size={35} color={"#e0ac00"} />
           </TouchableOpacity>
 
           <Image
@@ -147,17 +173,18 @@ const HomeScreen = () => {
             source={require("../images/GraciousInsignia.png")}
           />
           <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
-            <Ionicons name="settings" size={30} color={"#ffdd32"} />
+            <Ionicons name="settings" size={30} color={"#e0ac00"} />
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row justify-center my-5">
-          <Text className="text-xl font-bold">Hello {user.email}</Text>
-        </View>
-
+        {/* {userData && (
+          <View className="flex-row justify-center my-4">
+            <Text className="text-2xl font-bold">Hello {userData[0].name}</Text>
+          </View>
+        )} */}
         <View className="flex-row items-middle justify-between mx-4 mt-5">
           <TextInput
-            className="text-xl h-8"
+            className="text-base h-8"
             placeholder="Today I'm Grateful For..."
             value={gratitude}
             onChangeText={setGratitude}
@@ -165,7 +192,7 @@ const HomeScreen = () => {
           <TouchableOpacity>
             <AntDesign
               name="pluscircle"
-              color={"#ffdd32"}
+              color={"#e0ac00"}
               size={25}
               onPress={addGratitude}
             />
@@ -180,7 +207,7 @@ const HomeScreen = () => {
               >
                 <View
                   className="my-4 p-4 rounded-lg "
-                  style={{ backgroundColor: "#fffae5" }}
+                  style={{ backgroundColor: "#FCEFB4" }}
                 >
                   <Text className="text-sm ">
                     I'm Grateful For {gratitude.gratitude}
@@ -190,16 +217,26 @@ const HomeScreen = () => {
             );
           })}
         </ScrollView>
-        <View
-          style={styles.shadow}
-          className="top-7 justify-center p-8 rounded-lg"
+        <TouchableOpacity
+          onLongPress={() => {
+            navigation.navigate("Journal Entry", {
+              scripture: affirmation.verse.details.text,
+              verse: affirmation.verse.details.reference,
+            });
+          }}
         >
-          <View>
-            <Text className=" text-center text-base">
-              {affirmation.affirmation}
+          <View
+            style={styles.shadow}
+            className="top-14 justify-center p-8 rounded-lg"
+          >
+            <Text className=" text-center text-sm">
+              "{affirmation.verse.details.text}"
+            </Text>
+            <Text className=" top-4 text-center text-sm">
+              {affirmation.verse.details.reference}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </SafeAreaView>
     </View>
   );
@@ -207,14 +244,15 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   shadow: {
-    backgroundColor: "#ffd400",
-    shadowColor: "#fffae5",
+    backgroundColor: "#FCEFB4",
+
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 1,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
+    shadowOpacity: 0.1,
+    shadowRadius: 1.0,
 
     elevation: 2,
   },

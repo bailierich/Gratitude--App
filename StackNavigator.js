@@ -11,6 +11,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import JournalEntryScreen from "./screens/JournalEntryScreen";
+import EditJournalEntryScreen from "./screens/EditJournalEntryScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -35,9 +36,9 @@ const HomeTabs = () => {
             <Ionicons name={iconName} size={size} color={color} />
           );
         },
-        tabBarActiveTintColor: "#ffdd32",
+        tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: "white",
-        tabBarStyle: { height: 90, backgroundColor: "black" },
+        tabBarStyle: { height: 100, backgroundColor: "#CDB64C" },
       })}
     >
       <Tab.Screen
@@ -72,6 +73,10 @@ const StackNavigator = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="Journal Entry" component={JournalEntryScreen} />
+            <Stack.Screen
+              name="Edit Entry"
+              component={EditJournalEntryScreen}
+            />
           </Stack.Group>
           <Stack.Group screenOptions={{ presentation: "modal" }}>
             <Stack.Screen name="Modal" component={SettingsScreen} />

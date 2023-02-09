@@ -2,49 +2,34 @@ import {
   View,
   Text,
   SafeAreaView,
-  TouchableOpacity,
-  TextInput,
   ScrollView,
+  TextInput,
+  TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
-import useAuth from "../hooks/useAuth";
+import React, { useEffect, useState } from "react";
 import {
-  addDoc,
   collection,
   doc,
-  serverTimestamp,
-  setDoc,
-  Timestamp,
+  getDocs,
+  query,
+  updateDoc,
+  where,
 } from "firebase/firestore";
+import { useRoute } from "@react-navigation/native";
 import { db } from "../firebase.config";
 import { Entypo } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { v4 as uuid } from "uuid";
 
-const JournalEntryScreen = () => {
-  const [entry, setEntry] = useState();
-  const { user } = useAuth();
+export default function EditJournalEntry() {
   const JournalEntriesRef = collection(db, "journalentries");
+  const [editableEntry, setEditableEntry] = useState();
+  const [entryText, setEntryText] = useState();
+  const route = useRoute();
+  const entryID = route.params;
+  const docRef = doc(db, "journalentries", entryID);
   const navigation = useNavigation();
 
-  const d = new Date();
-  const date = d.toLocaleDateString();
-  const month = d.getMonth();
-  const year = d.getFullYear();
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  const q = query(JournalEntriesRef, where("id", "==", entryID));
   const truncate = (str, n, useWordBoundary) => {
     if (str.length <= n) {
       return str.slice(0, str.lastIndexOf(" "));
@@ -57,41 +42,52 @@ const JournalEntryScreen = () => {
         : substring) + "..."
     );
   };
-  const addJournalEntries = () => {
-    const displayEntry = truncate(entry, 100, true);
-    const unique_id = uuid();
-    const small_id = unique_id.slice(0, 8);
 
-    setDoc(doc(db, "journalentries", small_id), {
-      userID: user.uid,
-      date: date,
-      Year: year,
-      entry: entry,
-      month: monthNames[month],
-      monthYear: monthNames[month] + " - " + year,
-      displayEntry: displayEntry,
-      id: small_id,
-    })
+  const getJournalEntry = async () => {
+    const editableEntrySnapshot = await getDocs(q);
+
+    return editableEntrySnapshot.docs.map((entry) => entry.data());
+  };
+
+  const editJournalEntry = () => {
+    const newDisplayText = truncate(entryText, 100, true);
+    const newData = {
+      entry: entryText,
+      displayEntry: newDisplayText,
+    };
+
+    updateDoc(docRef, newData)
       .then(() => {
         console.log("Entry Saved");
         navigation.navigate("Journal");
       })
       .catch((error) => {
-        alert(error.message);
+        console.log(error.message);
       });
   };
-
-  return (
+  console.log(entryID);
+  useEffect(() => {
+    getJournalEntry()
+      .then((newData) => {
+        setEditableEntry(newData);
+        console.log("running");
+        setEntryText(newData[0].entry);
+      })
+      .catch((error) => console.log(error));
+  }, []);
+  console.log(editableEntry);
+  return !editableEntry ? (
+    <Text>Loading...</Text>
+  ) : (
     <SafeAreaView className=" h-full w-full relative">
       <ScrollView keyboardDismissMode="on-drag">
         <TextInput
           multiline={true}
           textAlignVertical="top"
-          value={entry}
-          onChangeText={setEntry}
+          value={entryText}
+          onChangeText={setEntryText}
           returnKeyType="done"
-          className="mt-12 h-96 mx-8"
-          placeholder="What do you need to say..."
+          className="mt-12 h-full mx-8"
         />
       </ScrollView>
       <View className="absolute bottom-0 h-24 w-full bg-black">
@@ -100,7 +96,7 @@ const JournalEntryScreen = () => {
           <TouchableOpacity
             className="px-5 py-2 rounded-md"
             style={{ backgroundColor: "#e0ac00" }}
-            onPress={addJournalEntries}
+            onPress={editJournalEntry}
           >
             <Text className="text-black font-bold text-base">Done</Text>
           </TouchableOpacity>
@@ -108,6 +104,4 @@ const JournalEntryScreen = () => {
       </View>
     </SafeAreaView>
   );
-};
-
-export default JournalEntryScreen;
+}
