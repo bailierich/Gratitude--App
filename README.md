@@ -1,5 +1,5 @@
 # Gratitude--App
-This app's goal is to provide a safe space for Christian Women to prioritze gratitude a their study of the bible. 
+This app's goal is to provide a safe space for Christian Women to prioritze gratitude, praying and bible study. 
 
 FUNCTIONALITY COMPLETED 
 -----------------------
