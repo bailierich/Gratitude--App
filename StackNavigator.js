@@ -12,6 +12,7 @@ import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import JournalEntryScreen from "./screens/JournalEntryScreen";
 import EditJournalEntryScreen from "./screens/EditJournalEntryScreen";
+import PromptModal from "./screens/PromptModal";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,6 +81,7 @@ const StackNavigator = () => {
           </Stack.Group>
           <Stack.Group screenOptions={{ presentation: "modal" }}>
             <Stack.Screen name="Modal" component={SettingsScreen} />
+            <Stack.Screen name="PromptModal" component={PromptModal} />
           </Stack.Group>
         </>
       ) : (

@@ -20,9 +20,10 @@ import { db } from "../firebase.config";
 import { Entypo } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { v4 as uuid } from "uuid";
+import JournalEntry from "../components/JournalEntry";
 
 const JournalEntryScreen = () => {
-  const [entry, setEntry] = useState();
+  /*   const [entry, setEntry] = useState();
   const { user } = useAuth();
   const JournalEntriesRef = collection(db, "journalentries");
   const navigation = useNavigation();
@@ -79,10 +80,12 @@ const JournalEntryScreen = () => {
       .catch((error) => {
         alert(error.message);
       });
-  };
+  }; */
 
   return (
-    <SafeAreaView className=" h-full w-full relative">
+    <JournalEntry existingDoc={false} />
+
+    /*  <SafeAreaView className=" h-full w-full relative">
       <ScrollView keyboardDismissMode="on-drag">
         <TextInput
           multiline={true}
@@ -106,7 +109,7 @@ const JournalEntryScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */
   );
 };
 

@@ -19,13 +19,20 @@ import { useRoute } from "@react-navigation/native";
 import { db } from "../firebase.config";
 import { Entypo } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import JournalEntry from "../components/JournalEntry";
 
 export default function EditJournalEntry() {
+  const route = useRoute();
+  const entryID = route.params.entryID;
   const JournalEntriesRef = collection(db, "journalentries");
+
+  const docRef = doc(db, "journalentries", entryID);
+  const q = query(JournalEntriesRef, where("id", "==", entryID));
+  /*  const JournalEntriesRef = collection(db, "journalentries");
   const [editableEntry, setEditableEntry] = useState();
   const [entryText, setEntryText] = useState();
-  const route = useRoute();
-  const entryID = route.params;
+  
+  
   const docRef = doc(db, "journalentries", entryID);
   const navigation = useNavigation();
 
@@ -74,12 +81,11 @@ export default function EditJournalEntry() {
         setEntryText(newData[0].entry);
       })
       .catch((error) => console.log(error));
-  }, []);
-  console.log(editableEntry);
-  return !editableEntry ? (
-    <Text>Loading...</Text>
-  ) : (
-    <SafeAreaView className=" h-full w-full relative">
+  }, []); */
+
+  return (
+    <JournalEntry docRef={docRef} q={q} entryID={entryID} existingDoc={true} />
+    /*  <SafeAreaView className=" h-full w-full relative">
       <ScrollView keyboardDismissMode="on-drag">
         <TextInput
           multiline={true}
@@ -102,6 +108,6 @@ export default function EditJournalEntry() {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </SafeAreaView> */
   );
 }
