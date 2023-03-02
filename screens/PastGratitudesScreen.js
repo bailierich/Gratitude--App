@@ -82,6 +82,11 @@ const PastGratitudesScreen = () => {
           return accum;
         }, []);
         console.log(result);
+
+        /*   result.forEach(dateGroup => {
+          dateGroup.data.sort()
+          
+        }); */
         setJournalEntries(result);
       })
       .catch((error) => {

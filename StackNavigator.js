@@ -10,9 +10,12 @@ import useAuth from "./hooks/useAuth";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { AntDesign } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import JournalEntryScreen from "./screens/JournalEntryScreen";
 import EditJournalEntryScreen from "./screens/EditJournalEntryScreen";
 import PromptModal from "./screens/PromptModal";
+import BibleVerseScreen from "./screens/BibleVerseScreen.js";
+import BibleScreen from "./screens/BibleScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,14 +31,26 @@ const HomeTabs = () => {
             iconName = focused ? "smileo" : "smile-circle";
           } else if (route.name === "Journal") {
             iconName = focused ? "journal" : "journal-outline";
+          } else if (route.name === "Bible") {
+            iconName = "bible";
           }
 
           // You can return any component that you like here!
-          return route.name === "Daily Gratitude" ? (
-            <AntDesign name={iconName} size={size} color={color} />
-          ) : (
-            <Ionicons name={iconName} size={size} color={color} />
-          );
+
+          if (route.name === "Daily Gratitude") {
+            return <AntDesign name={iconName} size={size} color={color} />;
+          } else if (route.name === "Journal") {
+            return <Ionicons name={iconName} size={size} color={color} />;
+          } else {
+            return (
+              <FontAwesome5
+                className=""
+                name={iconName}
+                size={size}
+                color={color}
+              />
+            );
+          }
         },
         tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: "white",
@@ -46,6 +61,11 @@ const HomeTabs = () => {
         options={{ headerShown: false }}
         name="Daily Gratitude"
         component={HomeScreen}
+      />
+      <Tab.Screen
+        options={{ headerShown: false }}
+        name="Bible"
+        component={BibleScreen}
       />
       <Tab.Screen
         options={{ headerShown: false }}
@@ -77,6 +97,10 @@ const StackNavigator = () => {
             <Stack.Screen
               name="Edit Entry"
               component={EditJournalEntryScreen}
+            />
+            <Stack.Screen
+              name="DailyBibleVerseScreen"
+              component={BibleVerseScreen}
             />
           </Stack.Group>
           <Stack.Group screenOptions={{ presentation: "modal" }}>

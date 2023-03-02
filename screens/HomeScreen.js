@@ -186,6 +186,7 @@ const HomeScreen = () => {
           <TextInput
             className="text-base h-8"
             placeholder="Today I'm Grateful For..."
+            placeholderTextColor={"grey"}
             value={gratitude}
             onChangeText={setGratitude}
           />
@@ -219,7 +220,7 @@ const HomeScreen = () => {
         </ScrollView>
         <TouchableOpacity
           onLongPress={() => {
-            navigation.navigate("Journal Entry", {
+            navigation.navigate("DailyBibleVerseScreen", {
               scripture: affirmation.verse.details.text,
               verse: affirmation.verse.details.reference,
             });

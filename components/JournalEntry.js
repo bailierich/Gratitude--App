@@ -21,21 +21,32 @@ import { db } from "../firebase.config";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Entypo, AntDesign } from "@expo/vector-icons";
 import Accordian from "./Accordian";
+import Prompt from "./Prompt";
+import { v4 as uuid } from "uuid";
+import useAuth from "../hooks/useAuth";
+
 const JournalEntry = (props) => {
+  const { user } = useAuth();
   const promptData = [
     {
+      key: "1",
       title: "SOAP Bible Study Prompt",
       mainText:
-        "Scripture Read and write down the scripture as per the verse of the day following this SOAP guide. Observation Pray the prayer “God, why did You write this?” Write down what you hear. Application Pray and ask “God how would You like me to apply this verse into my life?” Write down what you hear.  Prayer Write out a prayer to God based on what you just learned and ask him to help you apply this truth in your life.",
+        "Scripture - Write down the scripture. \nObserve - What do you see in the verses your reading. \nApplication - How can you apply this reading personally. \nPrayer - Pray about it, take God's word back to him.  .",
+      promptType: "SOAP",
     },
     {
+      key: "2",
       title: "Self Reflection Prompt",
       mainText:
         "dive deeper into yourself and gain a better understanding of who you are and who you want to be",
+      promptType: "JournalPrompt",
     },
     {
+      key: "3",
       title: "Reflect On a Scripture",
       mainText: "Dive Deeper Into Gods Word",
+      promptType: "ScriptureReflect",
     },
   ];
 
@@ -130,27 +141,61 @@ const JournalEntry = (props) => {
   //functions for adding a new journal entry
 
   const addJournalEntries = () => {
-    const displayEntry = truncate(entry, 100, true);
-    const unique_id = uuid();
-    const small_id = unique_id.slice(0, 8);
+    if (promptType == "SOAP") {
+      const newText =
+        "S: " +
+        soapScripture +
+        "\nO: " +
+        soapObservation +
+        "\nA: " +
+        soapApplication +
+        "\nP: " +
+        soapPrayer;
 
-    setDoc(doc(db, "journalentries", small_id), {
-      userID: user.uid,
-      date: date,
-      Year: year,
-      entry: entry,
-      month: monthNames[month],
-      monthYear: monthNames[month] + " - " + year,
-      displayEntry: displayEntry,
-      id: small_id,
-    })
-      .then(() => {
-        console.log("Entry Saved");
-        navigation.navigate("Journal");
+      const displayEntry = truncate(newText, 100, true);
+      const unique_id = uuid();
+      const small_id = unique_id.slice(0, 8);
+
+      setDoc(doc(db, "journalentries", small_id), {
+        userID: user.uid,
+        date: date,
+        Year: year,
+        entry: newText,
+        month: monthNames[month],
+        monthYear: monthNames[month] + " - " + year,
+        displayEntry: displayEntry,
+        id: small_id,
       })
-      .catch((error) => {
-        alert(error.message);
-      });
+        .then(() => {
+          console.log("Entry Saved");
+          navigation.navigate("Journal");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    } else {
+      const displayEntry = truncate(entry, 100, true);
+      const unique_id = uuid();
+      const small_id = unique_id.slice(0, 8);
+
+      setDoc(doc(db, "journalentries", small_id), {
+        userID: user.uid,
+        date: date,
+        Year: year,
+        entry: entry,
+        month: monthNames[month],
+        monthYear: monthNames[month] + " - " + year,
+        displayEntry: displayEntry,
+        id: small_id,
+      })
+        .then(() => {
+          console.log("Entry Saved");
+          navigation.navigate("Journal");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    }
   };
 
   // function for creating prompt(s)
@@ -161,9 +206,48 @@ const JournalEntry = (props) => {
 
   const [promptType, setPromptType] = useState();
 
+  const showBlankDoc = !hasSelectedPrompt && !isDailyVersePrompt;
+
+  const [savedScripture, setSavedScripture] = useState();
+  const [soapScripture, setSoapScripture] = useState();
+  const [soapObservation, setSoapObservation] = useState();
+  const [soapApplication, setSoapApplication] = useState();
+  const [soapPrayer, setSoapPrayer] = useState();
+
+  const [selfReflectPrompt, setSelfReflectPrompt] = useState();
+  const [randomBibleVerse, setRandomBibleVerse] = useState();
+
+  // validation
+  let enableButton = true;
+
+  if (hasSelectedPrompt) {
+    if (promptType == "SOAP") {
+      enableButton =
+        soapScripture || soapApplication || soapObservation || soapPrayer;
+    } else {
+      if (entry) {
+        enableButton = false;
+      }
+    }
+  } else {
+    if (entry) {
+      enableButton = false;
+    }
+  }
+  console.log(selfReflectPrompt);
+  console.log(promptType);
+  console.log(soapPrayer);
+
+  const handlePromptSelection = (promptType) => {
+    setPromptType(promptType);
+    setModalVisable(!modalVisable);
+    setHasSelectedPrompt(true);
+  };
+  console.log(promptType);
+
   return !props.existingDoc ? (
-    <SafeAreaView className=" h-full w-full relative">
-      <ScrollView keyboardDismissMode="on-drag">
+    <View className="bg-white">
+      <SafeAreaView className=" h-full w-full relative">
         <Modal
           animationType="slide"
           transparent={true}
@@ -172,10 +256,13 @@ const JournalEntry = (props) => {
             setModalVisable(!modalVisable);
           }}
         >
-          <SafeAreaView className="justify-center  flex-1 ">
+          <SafeAreaView
+            className="justify-center flex-1 "
+            style={{ borderColor: "CDB64C", borderStyle: "solid" }}
+          >
             <View
               className=" mt-10 mx-3 rounded-xl h-3/4"
-              style={{ backgroundColor: "#FFFAEB" }}
+              style={{ backgroundColor: "#FDF8E1" }}
             >
               <View className="px-5 mt-5">
                 <View className="flex-row justify-end">
@@ -184,104 +271,95 @@ const JournalEntry = (props) => {
                       setModalVisable(!modalVisable);
                     }}
                   >
-                    <AntDesign name="closecircle" size={24} color="black" />
+                    <AntDesign name="closecircle" size={30} color="#CDB64C" />
                   </TouchableOpacity>
                 </View>
-                <Text className="text-center font-bold text-lg">
+                <Text className="text-center font-bold text-2xl m-5">
                   Choose A Prompt
                 </Text>
                 {/* GOING TO IMPLEMENT ACCORDIAN HERE */}
                 {promptData.map((data) => {
                   return (
-                    <Accordian title={data.title} mainText={data.mainText} />
+                    <Accordian
+                      key={data.key}
+                      title={data.title}
+                      mainText={data.mainText}
+                      handleOnClick={handlePromptSelection}
+                      promptType={data.promptType}
+                    />
                   );
                 })}
-
-                {/*  <View className="  mt-5">
-                  <Text className="font-semibold">
-                    The SOAP Bible Study Method
-                  </Text>
-
-                  <Text className="mt-3 text-xs">
-                    Scripture Read and write down the scripture as per the verse
-                    of the day following this SOAP guide. Observation Pray the
-                    prayer “God, why did You write this?” Write down what you
-                    hear. Application Pray and ask “God how would You like me to
-                    apply this verse into my life?” Write down what you hear.
-                    Prayer Write out a prayer to God based on what you just
-                    learned and ask him to help you apply this truth in your
-                    life.
-                  </Text>
-                  <TouchableOpacity className="bg-black mt-5 p-2 rounded-lg">
-                    <Text className=" text-center text-white">Select</Text>
-                  </TouchableOpacity>
-                </View>
-                <View className="  mt-5">
-                  <Text className="font-semibold">Self Reflection Prompt</Text>
-
-                  <Text className="mt-3 text-xs">
-                    Dive deeper into yourself and who you are as a person.
-                  </Text>
-                  <TouchableOpacity className="bg-black mt-5 p-2 rounded-lg">
-                    <Text className=" text-center text-white">Select</Text>
-                  </TouchableOpacity>
-                </View>
-                <View className="  mt-5">
-                  <Text className="font-semibold">Reflect On A Scripture</Text>
-
-                  <Text className="mt-3 text-xs">
-                    Dive deeper into yourself and who you are as a person.
-                  </Text>
-                  <TouchableOpacity className="bg-black mt-5 p-2 rounded-lg">
-                    <Text className=" text-center text-white">Select</Text>
-                  </TouchableOpacity>
-                </View> */}
               </View>
             </View>
           </SafeAreaView>
         </Modal>
 
         {isDailyVersePrompt && (
-          <Prompt promptType={promptType} verse={verse} scripture={scripture} />
-        )}
-
-        {hasSelectedPrompt ? (
-          <Prompt promptType={promptType} entry={entry} setEntry={setEntry} />
-        ) : (
-          <TextInput
-            multiline={true}
-            textAlignVertical="top"
-            value={entry}
-            onChangeText={setEntry}
-            returnKeyType="done"
-            className="mt-12 h-96 mx-8"
-            placeholder="What do you need to say..."
+          <Prompt
+            verse={verse}
+            scripture={scripture}
+            entry={entry}
+            setEntry={setEntry}
           />
         )}
-      </ScrollView>
-      <View
-        className="absolute bottom-0 h-24 w-full"
-        style={{ backgroundColor: "#CDB64C" }}
-      >
-        <View className="flex-row mt-4 justify-between ml-11 mr-8 ">
-          <TouchableOpacity>
-            <Entypo
-              name="dots-three-horizontal"
-              size={35}
-              color="white"
-              onPress={() => setModalVisable(true)}
+
+        {hasSelectedPrompt && (
+          <Prompt
+            promptType={promptType}
+            entry={entry}
+            setEntry={setEntry}
+            soapScripture={soapScripture}
+            setSoapScripture={setSoapScripture}
+            soapObservation={soapObservation}
+            setSoapObservation={setSoapObservation}
+            soapApplication={soapApplication}
+            setSoapApplication={setSoapApplication}
+            soapPrayer={soapPrayer}
+            setSoapPrayer={setSoapPrayer}
+            setSelfReflectPrompt={setSelfReflectPrompt}
+            selfReflectPrompt={selfReflectPrompt}
+          />
+        )}
+
+        {showBlankDoc && (
+          <ScrollView keyboardDismissMode="on-drag">
+            <TextInput
+              multiline={true}
+              textAlignVertical="top"
+              value={entry}
+              onChangeText={setEntry}
+              returnKeyType="done"
+              className="mt-12 h-96 mx-8"
+              placeholder="What do you need to say..."
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="px-5 py-2 rounded-md"
-            style={{ backgroundColor: "white" }}
-            onPress={addJournalEntries}
-          >
-            <Text className="text-black font-bold text-base">Done</Text>
-          </TouchableOpacity>
+          </ScrollView>
+        )}
+
+        <View
+          className="absolute bottom-0 h-24 w-full"
+          style={{ backgroundColor: "#CDB64C" }}
+        >
+          <View className="flex-row mt-4 justify-between ml-11 mr-8 ">
+            <TouchableOpacity>
+              <Entypo
+                name="dots-three-horizontal"
+                size={35}
+                color="white"
+                onPress={() => setModalVisable(true)}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="px-5 py-2 rounded-md"
+              style={{ backgroundColor: "white" }}
+              onPress={addJournalEntries}
+              disabled={enableButton}
+            >
+              <Text className="text-black font-bold text-base">Done</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   ) : (
     <SafeAreaView className=" h-full w-full relative">
       <ScrollView keyboardDismissMode="on-drag">
@@ -301,8 +379,9 @@ const JournalEntry = (props) => {
         <View className="flex-row mt-4 justify-end ml-11 mr-8 ">
           <TouchableOpacity
             className="px-5 py-2 rounded-md"
-            style={{ backgroundColor: "#e0ac00" }}
+            style={{ backgroundColor: "white" }}
             onPress={editJournalEntry}
+            disabled={enableButton}
           >
             <Text className="text-black font-bold text-base">Done</Text>
           </TouchableOpacity>
