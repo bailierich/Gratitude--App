@@ -7,7 +7,7 @@ const LoadingScreen = () => {
   const { user } = useAuth();
   return (
     <View
-      className="flex-1 justify-center"
+      className="flex justify-center h-full w-full"
       style={{ backgroundColor: "#ffdd32" }}
     >
       <View className="flex-row justify-center">

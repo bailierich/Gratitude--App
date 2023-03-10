@@ -3,10 +3,15 @@ import React from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 const ChapterButton = (props) => {
+  const handlePress = () => {
+    props.setChapter(props.chapter);
+    props.setBook(props.book);
+    props.setBookModalVisable(!props.bookModalVisable);
+  };
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={handlePress}>
       <View>
-        <Text>{props.chapterName}</Text>
+        <Text className="text-lg font-semibold">{props.chapter}</Text>
       </View>
     </TouchableOpacity>
   );

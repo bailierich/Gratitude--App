@@ -9,6 +9,7 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { SafeAreaView } from "react-native";
 import { Entypo, Feather, Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import LoadingScreen from "./LoadingScreen";
 
 const Prompt = (props) => {
   let content;
@@ -249,43 +250,49 @@ const Prompt = (props) => {
       </ScrollView>
     );
   } else if (props.promptType == "JournalPrompt") {
-    content = (
-      <View>
-        <View
-          className="p-5 rounded-lg m-4"
-          style={{ backgroundColor: "#FDF8E1" }}
-        >
-          <View className="flex-row justify-between">
-            <Text className="text-lg">Journal Prompt</Text>
-            <TouchableOpacity>
-              <Ionicons
-                onPress={fetchPrompt}
-                name="refresh-circle"
-                size={30}
-                color="#CDB64C"
-              />
-            </TouchableOpacity>
-          </View>
+    if (props.selfReflectPrompt) {
+      content = (
+        <View>
           <View
-            className="my-4"
-            style={{
-              borderBottomColor: "#CDB64C",
-              borderBottomWidth: 0.4,
-            }}
-          />
-          <Text className="text-sm text-black">{props.selfReflectPrompt}</Text>
+            className="p-5 rounded-lg m-4"
+            style={{ backgroundColor: "#FDF8E1" }}
+          >
+            <View className="flex-row justify-between">
+              <Text className="text-lg">Journal Prompt</Text>
+              <TouchableOpacity>
+                <Ionicons
+                  onPress={fetchPrompt}
+                  name="refresh-circle"
+                  size={30}
+                  color="#CDB64C"
+                />
+              </TouchableOpacity>
+            </View>
+            <View
+              className="my-4"
+              style={{
+                borderBottomColor: "#CDB64C",
+                borderBottomWidth: 0.4,
+              }}
+            />
+            <Text className="text-sm text-black">
+              {props.selfReflectPrompt}
+            </Text>
+          </View>
+          <ScrollView>
+            <TextInput
+              className="mt-3 p-7 h-48"
+              placeholder="what would you like to say..."
+              multiline={true}
+              value={props.entry}
+              onChangeText={props.setEntry}
+            />
+          </ScrollView>
         </View>
-        <ScrollView>
-          <TextInput
-            className="mt-3 p-7 h-48"
-            placeholder="what would you like to say..."
-            multiline={true}
-            value={props.entry}
-            onChangeText={props.setEntry}
-          />
-        </ScrollView>
-      </View>
-    );
+      );
+    } else {
+      content = <LoadingScreen />;
+    }
   } else {
     content = (
       <View>

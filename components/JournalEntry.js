@@ -246,7 +246,14 @@ const JournalEntry = (props) => {
   console.log(promptType);
 
   return !props.existingDoc ? (
-    <View className="bg-white">
+    <View
+      className="bg-white"
+      style={
+        promptType == "JournalPrompt" && !selfReflectPrompt
+          ? { backgroundColor: "#ffdd32" }
+          : { backgroundColor: "white" }
+      }
+    >
       <SafeAreaView className=" h-full w-full relative">
         <Modal
           animationType="slide"

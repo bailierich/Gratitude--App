@@ -18,12 +18,13 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { useNavigation } from "@react-navigation/native";
+import LoadingScreen from "../components/LoadingScreen";
 
 const PastGratitudesScreen = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const JournalEntriesRef = collection(db, "journalentries");
-  const [journalEntries, setJournalEntries] = useState([]);
+  const [journalEntries, setJournalEntries] = useState();
   const navigation = useNavigation();
 
   const q = query(JournalEntriesRef, where("userID", "==", user.uid));
@@ -94,7 +95,7 @@ const PastGratitudesScreen = () => {
       });
   }, []);
 
-  return (
+  return journalEntries ? (
     <SafeAreaView className="bg-white flex-1">
       <View className="flex-row justify-center my-10 ">
         <Text className="text-2xl absolute font-bold">Journal</Text>
@@ -163,6 +164,8 @@ const PastGratitudesScreen = () => {
         )}
       />
     </SafeAreaView>
+  ) : (
+    <LoadingScreen />
   );
 };
 

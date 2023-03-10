@@ -182,7 +182,7 @@ const HomeScreen = () => {
             <Text className="text-2xl font-bold">Hello {userData[0].name}</Text>
           </View>
         )} */}
-        <View className="flex-row items-middle justify-between mx-4 mt-5">
+        <View className="flex-row items-middle justify-between  mt-5 p-4">
           <TextInput
             className="text-base h-8"
             placeholder="Today I'm Grateful For..."
