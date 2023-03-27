@@ -72,6 +72,7 @@ const JournalEntry = (props) => {
   const date = d.toLocaleDateString();
   const month = d.getMonth();
   const year = d.getFullYear();
+  const day = d.getDay();
 
   const monthNames = [
     "January",
@@ -173,6 +174,52 @@ const JournalEntry = (props) => {
         .catch((error) => {
           alert(error.message);
         });
+    } else if (isDailyVersePrompt) {
+      const newText = verse + "\n" + scripture + "\n\n" + entry;
+      const displayEntry = truncate(newText, 100, true);
+      const unique_id = uuid();
+      const small_id = unique_id.slice(0, 8);
+
+      setDoc(doc(db, "journalentries", small_id), {
+        userID: user.uid,
+        date: date,
+        Year: year,
+        entry: newText,
+        month: monthNames[month],
+        monthYear: monthNames[month] + " - " + year,
+        displayEntry: displayEntry,
+        id: small_id,
+      })
+        .then(() => {
+          console.log("Entry Saved");
+          navigation.navigate("Journal");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    } else if (promptType == "JournalPrompt") {
+      const newText = selfReflectPrompt + "\n\n" + entry;
+      const displayEntry = truncate(newText, 100, true);
+      const unique_id = uuid();
+      const small_id = unique_id.slice(0, 8);
+
+      setDoc(doc(db, "journalentries", small_id), {
+        userID: user.uid,
+        date: date,
+        Year: year,
+        entry: newText,
+        month: monthNames[month],
+        monthYear: monthNames[month] + " - " + year,
+        displayEntry: displayEntry,
+        id: small_id,
+      })
+        .then(() => {
+          console.log("Entry Saved");
+          navigation.navigate("Journal");
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
     } else {
       const displayEntry = truncate(entry, 100, true);
       const unique_id = uuid();
@@ -182,6 +229,7 @@ const JournalEntry = (props) => {
         userID: user.uid,
         date: date,
         Year: year,
+        day: day,
         entry: entry,
         month: monthNames[month],
         monthYear: monthNames[month] + " - " + year,
@@ -234,9 +282,6 @@ const JournalEntry = (props) => {
       enableButton = false;
     }
   }
-  console.log(selfReflectPrompt);
-  console.log(promptType);
-  console.log(soapPrayer);
 
   const handlePromptSelection = (promptType) => {
     setPromptType(promptType);
@@ -346,24 +391,37 @@ const JournalEntry = (props) => {
           className="absolute bottom-0 h-24 w-full"
           style={{ backgroundColor: "#CDB64C" }}
         >
-          <View className="flex-row mt-4 justify-between ml-11 mr-8 ">
-            <TouchableOpacity>
-              <Entypo
-                name="dots-three-horizontal"
-                size={35}
-                color="white"
-                onPress={() => setModalVisable(true)}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="px-5 py-2 rounded-md"
-              style={{ backgroundColor: "white" }}
-              onPress={addJournalEntries}
-              disabled={enableButton}
-            >
-              <Text className="text-black font-bold text-base">Done</Text>
-            </TouchableOpacity>
-          </View>
+          {isDailyVersePrompt ? (
+            <View className="flex-row mt-4 justify-end ml-11 mr-8 ">
+              <TouchableOpacity
+                className="px-5 py-2 rounded-md"
+                style={{ backgroundColor: "white" }}
+                onPress={addJournalEntries}
+                disabled={enableButton}
+              >
+                <Text className="text-black font-bold text-base">Done</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View className="flex-row mt-4 justify-between ml-11 mr-8 ">
+              <TouchableOpacity>
+                <Entypo
+                  name="dots-three-horizontal"
+                  size={35}
+                  color="white"
+                  onPress={() => setModalVisable(true)}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="px-5 py-2 rounded-md"
+                style={{ backgroundColor: "white" }}
+                onPress={addJournalEntries}
+                disabled={enableButton}
+              >
+                <Text className="text-black font-bold text-base">Done</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </SafeAreaView>
     </View>

@@ -251,6 +251,8 @@ const Prompt = (props) => {
     );
   } else if (props.promptType == "JournalPrompt") {
     if (props.selfReflectPrompt) {
+
+      
       content = (
         <View>
           <View
@@ -295,7 +297,7 @@ const Prompt = (props) => {
     }
   } else {
     content = (
-      <View>
+      <ScrollView className="m-4" keyboardDismissMode="on-drag">
         <View className="p-5 rounded-lg" style={{ backgroundColor: "#FDF8E1" }}>
           <Text>{props.verse}</Text>
           <Text>{props.scripture}</Text>
@@ -307,7 +309,7 @@ const Prompt = (props) => {
           value={props.entry}
           onChangeText={props.setEntry}
         />
-      </View>
+      </ScrollView>
     );
   }
   return <View className=" h-full w-full relative">{content}</View>;

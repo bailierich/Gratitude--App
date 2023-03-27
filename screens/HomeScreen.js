@@ -104,8 +104,8 @@ const HomeScreen = () => {
       .catch((error) => console.log(error));
   };
 
-  const deleteGratitude = async (id) => {
-    await deleteDoc(doc(db, "gratitudes", id))
+  const deleteGratitude = (id) => {
+    deleteDoc(doc(db, "gratitudes", id))
       .then(getGratitudes())
       .catch((error) => alert(error));
   };
@@ -228,7 +228,8 @@ const HomeScreen = () => {
         >
           <View
             style={styles.shadow}
-            className="top-14 justify-center p-8 rounded-lg"
+            className="top-12
+             justify-center p-8 rounded-lg"
           >
             <Text className=" text-center text-sm">
               "{affirmation.verse.details.text}"
