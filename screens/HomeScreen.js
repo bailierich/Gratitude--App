@@ -53,7 +53,7 @@ const HomeScreen = () => {
   const q = query(
     gratitudesRef,
     where("date", "==", dateString),
-    where("id", "==", user.uid)
+    where("user", "==", user.uid)
   );
 
   const fetchScripture = () => {
@@ -70,7 +70,7 @@ const HomeScreen = () => {
 
   const addGratitude = () => {
     addDoc(collection(db, "gratitudes"), {
-      id: user.uid,
+      user: user.uid,
       date: dateString,
       gratitude: gratitude,
     })

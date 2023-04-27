@@ -16,9 +16,22 @@ import BooksAccordian from "../components/BooksAccordian";
 import { SelectableText } from "@alentoma/react-native-selectable-text";
 import { Ionicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { db } from "../firebase.config";
+import useAuth from "../hooks/useAuth";
 
 const BibleScreen = () => {
   const [book, setBook] = useState(0);
+  // TODO create a way to store last viewed scripture or set to random
   const [chapter, setChapter] = useState(2);
   const [translation, setTranslation] = useState("KJV");
   const [text, setText] = useState("");
@@ -27,18 +40,196 @@ const BibleScreen = () => {
   const [highlightID, setHighlightID] = useState([]);
   const [bookmark, setBookmark] = useState();
   const [actionModalVisable, setActionModalVisable] = useState(false);
-  const [permHighlight, setPermHightlight] = useState();
-
+  const [permHighlight, setPermHightlight] = useState([]);
+  const [noteModalVisable, setNoteModalVisable] = useState(false);
+  const [databaseHighlights, setDatabaseHighlights] = useState();
+  const { user } = useAuth();
   const NO_WIDTH_SPACE = " ";
 
-  const highlight = (string) =>
-    string.split(" ").map((word, i) => (
-      <Text key={i}>
-        <Text className="text-2xl" style={styles.highlighted}>
-          {word}{" "}
+  const highlightRef = collection(db, "biblehighlights");
+  const q = query(highlightRef, where("user", "==", user.uid));
+
+  // TODO Save PK and highlight color in database -- DONE
+  // TODO Grab PK and highlight color and add them to the state variable getHighlights()
+  // TODO add or statement to check if PK is in state variable that holds PK's from database
+  // TODO add statement to highlight function to grab the color of the specific PK from the database...?? Object
+  // ? How am I going to recognize a passage that's already highlighted and alllow it to be deleted
+
+  //TODO APRL 20th try these functions and see what works -- add
+
+  //FIX DELETE function -- figure out how to delete multiple highlight, maybe check how many ID's are in highlightID
+
+  const isPermHighlightYellow = (element) => {
+    return highlightID.includes(element.versePK) && element.color === "#EBB704";
+  };
+
+  const isPermHighlightGreen = (element) => {
+    return highlightID.includes(element.versePK) && element.color === "#34B06A";
+  };
+
+  const isPermHighlightBlue = (element) => {
+    return highlightID.includes(element.versePK) && element.color === "#2892D0";
+  };
+
+  const isPermHighlightPink = (element) => {
+    return highlightID.includes(element.versePK) && element.color === "#E54686";
+  };
+
+  const deletePermHighlight = () => {
+    let newHighlights;
+    highlightID.forEach((highlightid) => {
+      console.log(permHighlight);
+      const selectedHighlight = permHighlight.find(
+        (e) => e.versePK === highlightid
+      );
+      if (selectedHighlight) {
+        console.log("selectedHighlight:" + selectedHighlight);
+        deleteDoc(doc(db, "biblehighlights", selectedHighlight.id));
+      }
+
+      newHighlights = [...permHighlight];
+
+      const indexOfHighlight = newHighlights.findIndex(
+        (e) => e.versePK === highlightid
+      );
+
+      newHighlights.splice(indexOfHighlight, 1);
+
+      setPermHightlight(newHighlights);
+    });
+    setDatabaseHighlights(newHighlights);
+  };
+
+  //? Maybe combine create and save highlight with update highlight, if highlight id isn't found in permhighlight then a new
+  //? highlight will get created, if it is found the color will be updated to match the new color provided
+  const createUpdateAndSaveHighlight = (color) => {
+    console.log("these are the perm highlights" + permHighlight);
+    highlightID.map((highlightId) => {
+      console.log("highlight verse PK:" + highlightId);
+      if (permHighlight.includes((e) => e.versePK === highlightId)) {
+        console.log("I'm updating");
+        const element = permHighlight.find((e) => e.versePK === highlightId);
+        console.log(element);
+        const docRef = doc(db, "biblehighlights", element.id);
+        updateDoc(docRef, { color: color })
+          .then(getHighlights())
+          .then(console.log("color updated"))
+          .catch((e) => console.log(e));
+      } else {
+        addDoc(collection(db, "biblehighlights"), {
+          user: user.uid,
+          versePK: highlightId,
+          color: color,
+          book: book,
+          chapter: chapter,
+        })
+          .then(() => getHighlights())
+          .catch((e) => console.log(e));
+      }
+    });
+  };
+
+  const getHighlights = () => {
+    getDocs(q)
+      .then((querySnapshot) => {
+        const newData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        setPermHightlight(newData);
+      })
+      .then(console.log(permHighlight))
+      .then(console.log("gothighlights"))
+      .catch((e) => console.log(e));
+  };
+
+  const createAndSaveNote = (versePK, note, verseText) => {
+    addDoc(collection(db, "biblenotes"), {
+      id: user.uid,
+      versePK: versePK,
+      book: book,
+      chapter: chapter,
+      note: note,
+      verseText: verseText,
+    }).catch((e) => console.log(e));
+  };
+
+  const updateHighlightColor = (updatedColor, id) => {
+    const docRef = doc(db, "biblehighlights", id);
+    updateDoc(docRef, updatedColor)
+      .then(getHighlights())
+      .then(console.log("color updated"))
+      .catch((e) => console.log(e));
+  };
+
+  // TODO need to create bookmark screen, bookmark screen book marks should be links and take user directly to verse
+  const createAndSaveBookmark = () => {
+    addDoc(collection(db, "biblebookmarks"), {
+      id: user.uid,
+      versePK: versePK,
+      book: book,
+      chapter: chapter,
+      verseText: verseText,
+    }).catch((e) => console.log(e));
+  };
+
+  //TODO change highlight function to take into account that permanant highlights are now created individually
+  //TODO add logic for highlights that are clicked and permantly highlighted to also have underine in red
+  const highlight = (string, versepk) => {
+    if (permHighlight.some((e) => e.versePK === versepk)) {
+      let currentPK = permHighlight.find((e) => e.versePK === versepk);
+      let highlightColor = currentPK.color;
+
+      console.log(currentPK);
+      console.log(highlightColor);
+      console.log(permHighlight);
+      console.log(highlightID);
+
+      if (highlightColor === "#EBB704") {
+        return string.split(" ").map((word, i) => (
+          <Text key={i}>
+            <Text className="text-2xl" style={styles.highlightEBB704}>
+              {word}{" "}
+            </Text>
+          </Text>
+        ));
+      } else if (highlightColor === "#34B06A") {
+        return string.split(" ").map((word, i) => (
+          <Text key={i}>
+            <Text className="text-2xl" style={styles.highlight34B06A}>
+              {word}{" "}
+            </Text>
+          </Text>
+        ));
+      } else if (highlightColor === "#2892D0") {
+        return string.split(" ").map((word, i) => (
+          <Text key={i}>
+            <Text className="text-2xl" style={styles.highlight2892D0}>
+              {word}{" "}
+            </Text>
+          </Text>
+        ));
+      } else if (highlightColor === "#E54686") {
+        return string.split(" ").map((word, i) => (
+          <Text key={i}>
+            <Text className="text-2xl" style={styles.highlightE54686}>
+              {word}{" "}
+            </Text>
+          </Text>
+        ));
+      }
+    } else {
+      console.log("im here");
+      console.log(string);
+      return string.split(" ").map((word, i) => (
+        <Text key={i}>
+          <Text className="text-2xl" style={styles.highlighted}>
+            {word}{" "}
+          </Text>
         </Text>
-      </Text>
-    ));
+      ));
+    }
+  };
 
   const highlightAndOpenActionModal = (ID) => {
     if (highlightID.includes(ID)) {
@@ -602,13 +793,26 @@ const BibleScreen = () => {
 
   useEffect(() => {
     getBibleChapter();
-  }, [chapter, translation]);
+    getHighlights();
+  }, [chapter, translation, databaseHighlights]);
 
   console.log(chapter);
-  console.log(text);
 
   return text ? (
     <View className="bg-white">
+      {/* Modal for Note Creation */}
+      <Modal
+        visible={noteModalVisable}
+        animationType="slide"
+        transparent={true}
+      >
+        <View className="justify-center flex-1 ">
+          <View
+            className=" mt-5 rounded-xl h-2/4"
+            style={{ backgroundColor: "#FDF8E1" }}
+          ></View>
+        </View>
+      </Modal>
       {/* Modal for Translation Selection */}
       <Modal
         visible={translationModalVisable}
@@ -806,8 +1010,9 @@ const BibleScreen = () => {
                     {verse.verse}
                   </Text>
                 </View>
-                {highlightID.includes(verse.pk) ? (
-                  highlight(replace2)
+                {highlightID.includes(verse.pk) ||
+                permHighlight.some((e) => e.versePK === verse.pk) ? (
+                  highlight(replace2, verse.pk)
                 ) : (
                   <Text className="text-2xl">{replace2}</Text>
                 )}
@@ -836,8 +1041,8 @@ const BibleScreen = () => {
       </View>
       {actionModalVisable ? (
         <View className="absolute w-full  h-36 bottom-0 bg-gray-100">
-          <View className="flex-row justify-end">
-            <View className="p-2 m-2">
+          <View className="flex-row justify-end bg-black opacity-75">
+            <View className="p-2 m-2 mb-4">
               <AntDesign
                 name="close"
                 onPress={() => {
@@ -845,7 +1050,7 @@ const BibleScreen = () => {
                   setActionModalVisable(false);
                 }}
                 size={30}
-                color="black"
+                color="white"
               />
             </View>
           </View>
@@ -854,7 +1059,13 @@ const BibleScreen = () => {
             contentContainerStyle={{ paddingLeft: 4 }}
           >
             <View>
-              <TouchableOpacity className="bg-black m-2 p-4 rounded-xl">
+              <TouchableOpacity
+                className="bg-black m-2 p-4 rounded-xl"
+                onPress={() => {
+                  setNoteModalVisable((prev) => !prev);
+                  setActionModalVisable((prev) => !prev);
+                }}
+              >
                 <Text className="text-white">Note</Text>
               </TouchableOpacity>
             </View>
@@ -864,24 +1075,106 @@ const BibleScreen = () => {
               </TouchableOpacity>
             </View>
             <View className="m-2">
-              <TouchableOpacity className="p-2">
-                <FontAwesome name="circle" size={40} color="green" />
-              </TouchableOpacity>
+              {permHighlight.some(isPermHighlightYellow) ? (
+                //* delete highlight
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    deletePermHighlight();
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="times-circle" size={40} color="#EBB704" />
+                </TouchableOpacity>
+              ) : (
+                // * create new highlight or change highlight color
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    createUpdateAndSaveHighlight("#EBB704", highlightID);
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="circle" size={40} color="#EBB704" />
+                </TouchableOpacity>
+              )}
             </View>
             <View className="m-2">
-              <TouchableOpacity className="p-2">
-                <FontAwesome name="circle" size={40} color="blue" />
-              </TouchableOpacity>
+              {permHighlight.some(isPermHighlightGreen) ? (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    deletePermHighlight();
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="times-circle" size={40} color="#34B06A" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    createUpdateAndSaveHighlight("#34B06A", highlightID);
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="circle" size={40} color="#34B06A" />
+                </TouchableOpacity>
+              )}
             </View>
             <View className="m-2">
-              <TouchableOpacity className="p-2">
-                <FontAwesome name="circle" size={40} color="purple" />
-              </TouchableOpacity>
+              {permHighlight.some(isPermHighlightBlue) ? (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    deletePermHighlight();
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="times-circle" size={40} color="#2892D0" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    createUpdateAndSaveHighlight("#2892D0", highlightID);
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="circle" size={40} color="#2892D0" />
+                </TouchableOpacity>
+              )}
             </View>
             <View className="m-2">
-              <TouchableOpacity className="p-2">
-                <FontAwesome name="circle" size={40} color="red" />
-              </TouchableOpacity>
+              {permHighlight.some(isPermHighlightPink) ? (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    deletePermHighlight();
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="times-circle" size={40} color="#E54686" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  className="p-2"
+                  onPress={() => {
+                    createUpdateAndSaveHighlight("#E54686", highlightID);
+                    setHighlightID([]);
+                    setActionModalVisable(false);
+                  }}
+                >
+                  <FontAwesome name="circle" size={40} color="#E54686" />
+                </TouchableOpacity>
+              )}
             </View>
           </ScrollView>
         </View>
@@ -895,7 +1188,25 @@ const BibleScreen = () => {
 const styles = {
   highlighted: {
     padding: 2,
-    backgroundColor: "#FBEEBB",
+    textDecorationLine: "underline",
+    textDecorationColor: "red",
+    textDecorationStyle: "dotted",
+  },
+  highlightEBB704: {
+    padding: 2,
+    backgroundColor: "#EBB704",
+  },
+  highlight34B06A: {
+    padding: 2,
+    backgroundColor: "#34B06A",
+  },
+  highlight2892D0: {
+    padding: 2,
+    backgroundColor: "#2892D0",
+  },
+  highlightE54686: {
+    padding: 2,
+    backgroundColor: "#E54686",
   },
 };
 
