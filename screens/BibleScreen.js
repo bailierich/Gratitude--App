@@ -30,6 +30,8 @@ import { db } from "../firebase.config";
 import useAuth from "../hooks/useAuth";
 
 const BibleScreen = () => {
+  const date = new Date();
+  const todaysDate = date.toLocaleDateString();
   const [book, setBook] = useState(0);
   // TODO create a way to store last viewed scripture or set to random
   const [chapter, setChapter] = useState(2);
@@ -43,6 +45,7 @@ const BibleScreen = () => {
   const [permHighlight, setPermHightlight] = useState([]);
   const [noteModalVisable, setNoteModalVisable] = useState(false);
   const [databaseHighlights, setDatabaseHighlights] = useState();
+  const [noteVerses, setNoteVerses] = useState();
   const { user } = useAuth();
   const NO_WIDTH_SPACE = " ";
 
@@ -76,28 +79,44 @@ const BibleScreen = () => {
   };
 
   const deletePermHighlight = () => {
-    let newHighlights;
     highlightID.forEach((highlightid) => {
+      let newHighlights = [...permHighlight];
       console.log(permHighlight);
-      const selectedHighlight = permHighlight.find(
+      const selectedHighlight = newHighlights.find(
         (e) => e.versePK === highlightid
       );
       if (selectedHighlight) {
         console.log("selectedHighlight:" + selectedHighlight);
-        deleteDoc(doc(db, "biblehighlights", selectedHighlight.id));
+        deleteDoc(doc(db, "biblehighlights", selectedHighlight.id))
+          .then(() => {
+            const indexOfHighlight = newHighlights.findIndex(
+              (e) => e.versePK === highlightid
+            );
+            console.log("this is the indexof the highlight" + indexOfHighlight);
+            newHighlights.splice(indexOfHighlight, 1);
+            console.log("this is the new array" + newHighlights);
+            setPermHightlight(newHighlights);
+          })
+          .catch((e) => console.log(e));
       }
-
-      newHighlights = [...permHighlight];
-
-      const indexOfHighlight = newHighlights.findIndex(
-        (e) => e.versePK === highlightid
-      );
-
-      newHighlights.splice(indexOfHighlight, 1);
-
-      setPermHightlight(newHighlights);
     });
-    setDatabaseHighlights(newHighlights);
+    getHighlights();
+  };
+
+  const getNoteVerses = () => {
+    let verses = [];
+    highlightID.map((e) => {
+      console.log("this is the id" + e);
+      let verse = text.find((f) => {
+        console.log("this is the textverse" + f);
+        f.versePK === e;
+      });
+
+      verses.push(verse);
+    });
+
+    setNoteVerses(verses);
+    console.log("this is the note verses" + noteVerses);
   };
 
   //? Maybe combine create and save highlight with update highlight, if highlight id isn't found in permhighlight then a new
@@ -129,7 +148,7 @@ const BibleScreen = () => {
     });
   };
 
-  const getHighlights = () => {
+  const getHighlights = async () => {
     getDocs(q)
       .then((querySnapshot) => {
         const newData = querySnapshot.docs.map((doc) => ({
@@ -152,14 +171,6 @@ const BibleScreen = () => {
       note: note,
       verseText: verseText,
     }).catch((e) => console.log(e));
-  };
-
-  const updateHighlightColor = (updatedColor, id) => {
-    const docRef = doc(db, "biblehighlights", id);
-    updateDoc(docRef, updatedColor)
-      .then(getHighlights())
-      .then(console.log("color updated"))
-      .catch((e) => console.log(e));
   };
 
   // TODO need to create bookmark screen, bookmark screen book marks should be links and take user directly to verse
@@ -806,11 +817,37 @@ const BibleScreen = () => {
         animationType="slide"
         transparent={true}
       >
-        <View className="justify-center flex-1 ">
+        <View className="justify-center flex-1 p-4">
           <View
-            className=" mt-5 rounded-xl h-2/4"
+            className=" mt-5 rounded-xl h-2/4 flex-col"
             style={{ backgroundColor: "#FDF8E1" }}
-          ></View>
+          >
+            <View className="flex-row justify-between p-6">
+              <View>
+                <Text>{todaysDate}</Text>
+              </View>
+              <View className="">
+                <AntDesign
+                  name="close"
+                  onPress={() => {
+                    setNoteModalVisable((prev) => !prev);
+                  }}
+                  size={30}
+                  color="black"
+                />
+              </View>
+            </View>
+            <View style={styles.borderLine} />
+            <View>
+              <Text>
+                {noteVerses
+                  ? noteVerses.map((verse) => {
+                      <Text>{verse.verse}</Text>;
+                    })
+                  : null}
+              </Text>
+            </View>
+          </View>
         </View>
       </Modal>
       {/* Modal for Translation Selection */}
@@ -1039,6 +1076,7 @@ const BibleScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       {actionModalVisable ? (
         <View className="absolute w-full  h-36 bottom-0 bg-gray-100">
           <View className="flex-row justify-end bg-black opacity-75">
@@ -1064,6 +1102,7 @@ const BibleScreen = () => {
                 onPress={() => {
                   setNoteModalVisable((prev) => !prev);
                   setActionModalVisable((prev) => !prev);
+                  getNoteVerses();
                 }}
               >
                 <Text className="text-white">Note</Text>
@@ -1186,6 +1225,11 @@ const BibleScreen = () => {
 };
 
 const styles = {
+  borderLine: {
+    borderBottomColor: "black",
+    borderBottomWidth: 1,
+  },
+
   highlighted: {
     padding: 2,
     textDecorationLine: "underline",
