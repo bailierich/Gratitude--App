@@ -140,17 +140,6 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    /*  const unsub = onSnapshot(doc(db, "users", user.uid), (snapshot) => {
-      if (!snapshot.exists) {
-        navigation.navigate("Modal");
-
-        console.log("this ran");
-      } else {
-        console.log("this is running");
-        getUserData();
-      }
-    }); */
-
     getGratitudes();
 
     fetchScripture();
@@ -177,11 +166,6 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* {userData && (
-          <View className="flex-row justify-center my-4">
-            <Text className="text-2xl font-bold">Hello {userData[0].name}</Text>
-          </View>
-        )} */}
         <View className="flex-row items-middle justify-between  mt-5 p-4">
           <TextInput
             className="text-base h-8"
@@ -228,13 +212,13 @@ const HomeScreen = () => {
         >
           <View
             style={styles.shadow}
-            className="top-12
+            className="top-8
              justify-center p-8 rounded-lg"
           >
-            <Text className=" text-center text-sm">
+            <Text className=" text-white text-center text-sm">
               "{affirmation.verse.details.text}"
             </Text>
-            <Text className=" top-4 text-center text-sm">
+            <Text className=" text-gray-100 top-4 text-center text-sm">
               {affirmation.verse.details.reference}
             </Text>
           </View>
@@ -246,7 +230,7 @@ const HomeScreen = () => {
 
 const styles = StyleSheet.create({
   shadow: {
-    backgroundColor: "#FCEFB4",
+    backgroundColor: "black",
 
     shadowColor: "#000",
     shadowOffset: {

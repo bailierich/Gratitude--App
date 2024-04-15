@@ -29,11 +29,11 @@ import {
 import { db } from "../firebase.config";
 import useAuth from "../hooks/useAuth";
 
+// Bible Screen -- Displays Bible and allows for highlighting scriptures, which save to firebase
 const BibleScreen = () => {
   const date = new Date();
   const todaysDate = date.toLocaleDateString();
   const [book, setBook] = useState(0);
-  // TODO create a way to store last viewed scripture or set to random
   const [chapter, setChapter] = useState(2);
   const [translation, setTranslation] = useState("KJV");
   const [text, setText] = useState("");
@@ -52,16 +52,7 @@ const BibleScreen = () => {
   const highlightRef = collection(db, "biblehighlights");
   const q = query(highlightRef, where("user", "==", user.uid));
 
-  // TODO Save PK and highlight color in database -- DONE
-  // TODO Grab PK and highlight color and add them to the state variable getHighlights()
-  // TODO add or statement to check if PK is in state variable that holds PK's from database
-  // TODO add statement to highlight function to grab the color of the specific PK from the database...?? Object
-  // ? How am I going to recognize a passage that's already highlighted and alllow it to be deleted
-
-  //TODO APRL 20th try these functions and see what works -- add
-
-  //FIX DELETE function -- figure out how to delete multiple highlight, maybe check how many ID's are in highlightID
-
+  //
   const isPermHighlightYellow = (element) => {
     return highlightID.includes(element.versePK) && element.color === "#EBB704";
   };
@@ -78,13 +69,15 @@ const BibleScreen = () => {
     return highlightID.includes(element.versePK) && element.color === "#E54686";
   };
 
+  //Deletes Permanant Highlights
   const deletePermHighlight = () => {
     highlightID.forEach((highlightid) => {
       let newHighlights = [...permHighlight];
-      console.log(permHighlight);
+
       const selectedHighlight = newHighlights.find(
         (e) => e.versePK === highlightid
       );
+
       if (selectedHighlight) {
         console.log("selectedHighlight:" + selectedHighlight);
         deleteDoc(doc(db, "biblehighlights", selectedHighlight.id))
@@ -119,8 +112,6 @@ const BibleScreen = () => {
     console.log("this is the note verses" + noteVerses);
   };
 
-  //? Maybe combine create and save highlight with update highlight, if highlight id isn't found in permhighlight then a new
-  //? highlight will get created, if it is found the color will be updated to match the new color provided
   const createUpdateAndSaveHighlight = (color) => {
     console.log("these are the perm highlights" + permHighlight);
     highlightID.map((highlightId) => {
@@ -148,6 +139,7 @@ const BibleScreen = () => {
     });
   };
 
+  // retrieves the highlights from the firebase db based on user uid and sets Perm highlight with that data
   const getHighlights = async () => {
     getDocs(q)
       .then((querySnapshot) => {
@@ -162,6 +154,7 @@ const BibleScreen = () => {
       .catch((e) => console.log(e));
   };
 
+  //Creates a new note in the firebase bible notes db
   const createAndSaveNote = (versePK, note, verseText) => {
     addDoc(collection(db, "biblenotes"), {
       id: user.uid,
@@ -173,7 +166,6 @@ const BibleScreen = () => {
     }).catch((e) => console.log(e));
   };
 
-  // TODO need to create bookmark screen, bookmark screen book marks should be links and take user directly to verse
   const createAndSaveBookmark = () => {
     addDoc(collection(db, "biblebookmarks"), {
       id: user.uid,
@@ -184,17 +176,12 @@ const BibleScreen = () => {
     }).catch((e) => console.log(e));
   };
 
-  //TODO change highlight function to take into account that permanant highlights are now created individually
-  //TODO add logic for highlights that are clicked and permantly highlighted to also have underine in red
+  // Highlight within UI based on highlight color selected
+
   const highlight = (string, versepk) => {
     if (permHighlight.some((e) => e.versePK === versepk)) {
       let currentPK = permHighlight.find((e) => e.versePK === versepk);
       let highlightColor = currentPK.color;
-
-      console.log(currentPK);
-      console.log(highlightColor);
-      console.log(permHighlight);
-      console.log(highlightID);
 
       if (highlightColor === "#EBB704") {
         return string.split(" ").map((word, i) => (
@@ -230,11 +217,10 @@ const BibleScreen = () => {
         ));
       }
     } else {
-      console.log("im here");
-      console.log(string);
+      // if no highlight color has been chosen, underline
       return string.split(" ").map((word, i) => (
         <Text key={i}>
-          <Text className="text-2xl" style={styles.highlighted}>
+          <Text className="text-2xl" style={styles.underlined}>
             {word}{" "}
           </Text>
         </Text>
@@ -950,7 +936,6 @@ const BibleScreen = () => {
 
               <ScrollView className="mb-10">
                 <Text className="text-center font-bold text-2xl">Books</Text>
-                {/* GOING TO IMPLEMENT ACCORDIAN HERE */}
 
                 {books.map((data) => {
                   return (
@@ -1230,7 +1215,7 @@ const styles = {
     borderBottomWidth: 1,
   },
 
-  highlighted: {
+  underlined: {
     padding: 2,
     textDecorationLine: "underline",
     textDecorationColor: "red",

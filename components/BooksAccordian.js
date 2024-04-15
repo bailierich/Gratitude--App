@@ -70,8 +70,6 @@ const styles = {
     margin: 4,
     justifyContent: "center",
     alignItems: "center",
-
-    // my visual styles; not important for grid
     padding: 10,
     backgroundColor: "white",
   },

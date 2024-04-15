@@ -50,14 +50,10 @@ const JournalEntry = (props) => {
     },
   ];
 
-  // still kind of confused as to if i should raise the state up higher than this
-
   const [entry, setEntry] = useState();
 
   const [editableEntry, setEditableEntry] = useState();
   const [entryText, setEntryText] = useState();
-
-  // these route params are going to be moved
 
   const entryID = props.entryID;
 

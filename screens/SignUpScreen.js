@@ -26,20 +26,6 @@ const SignUpScreen = () => {
 
   const { signUp, user } = useAuth();
 
-  /*  const updateUserProfile = () => {
-    setDoc(doc(db, "users", user.uid), {
-      id: user.uid,
-      displayName: name,
-      timestamp: serverTimestamp(),
-    })
-      .then(() => {
-        console.log("name has saved");
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
-  }; */
-
   const validateAndSignUp = () => {
     if (passwordsMatch) {
       signUp(email, password);

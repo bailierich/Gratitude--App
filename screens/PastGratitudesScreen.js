@@ -243,7 +243,7 @@ const PastGratitudesScreen = () => {
         renderSectionHeader={({ section }) => (
           <View
             className="m-5 p-2 rounded-lg"
-            style={{ backgroundColor: "#E2C854" }}
+            style={{ backgroundColor: "black" }}
           >
             <TouchableOpacity
               className="flex-row justify-between items-center m-2"
