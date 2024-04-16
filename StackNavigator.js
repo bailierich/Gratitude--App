@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingsScreen";
-import PastGratitudesScreen from "./screens/PastGratitudesScreen";
+import JournalHomeScreen from "./screens/JournalHomeScreen.js";
 import SignUpScreen from "./screens/SignUpScreen";
 import useAuth from "./hooks/useAuth";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -70,7 +70,7 @@ const HomeTabs = () => {
       <Tab.Screen
         options={{ headerShown: false }}
         name="Journal"
-        component={PastGratitudesScreen}
+        component={JournalHomeScreen}
       />
     </Tab.Navigator>
   );

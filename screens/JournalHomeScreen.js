@@ -60,26 +60,6 @@ const PastGratitudesScreen = () => {
 
     return entrySnapshot.docs.map((entry) => entry.data());
   };
-  const refreshList = () => {
-    getEntriesFromFireB()
-      .then((newData) => {
-        console.log(newData);
-        const result = newData.reduce((accum, current) => {
-          let dateGroup = accum.find((x) => x.monthYear === current.monthYear);
-          if (!dateGroup) {
-            dateGroup = { monthYear: current.monthYear, data: [] };
-            accum.push(dateGroup);
-          }
-          dateGroup.data.push(current);
-          return accum;
-        }, []);
-        console.log(result);
-        setJournalEntries(result);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -252,7 +232,7 @@ const PastGratitudesScreen = () => {
                 toggleExpand();
               }}
             >
-              <Text className="text-lg font-bold text-center">
+              <Text className="text-lg text-center text-white">
                 {section.monthYear}
               </Text>
               <AntDesign

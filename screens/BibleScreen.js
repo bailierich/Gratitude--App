@@ -112,6 +112,7 @@ const BibleScreen = () => {
     console.log("this is the note verses" + noteVerses);
   };
 
+  // Creates highlight in db or updates highlight color
   const createUpdateAndSaveHighlight = (color) => {
     console.log("these are the perm highlights" + permHighlight);
     highlightID.map((highlightId) => {
@@ -792,8 +793,6 @@ const BibleScreen = () => {
     getBibleChapter();
     getHighlights();
   }, [chapter, translation, databaseHighlights]);
-
-  console.log(chapter);
 
   return text ? (
     <View className="bg-white">
