@@ -12,7 +12,7 @@ The JavaScript bundle can be run in the [Expo Go](https://expo.dev/expo-go) app.
 
 [![Run in Expo Go](https://img.shields.io/badge/Run%20in%20Expo%20Go-4285F4.svg?style=flat-square&logo=EXPO&labelColor=4285F4&logoColor=fff)](https://expo.dev/@bacon/pillar-valley)
 
-![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif)
+
 
 ## Key Features
 
