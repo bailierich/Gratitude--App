@@ -29,7 +29,6 @@ const SignUpScreen = () => {
   const validateAndSignUp = () => {
     if (passwordsMatch) {
       signUp(email, password);
-      // updateUserProfile();
     } else {
       showMessage = true;
     }

@@ -56,6 +56,7 @@ const HomeScreen = () => {
     where("user", "==", user.uid)
   );
 
+  // Get Random Scripture From API
   const fetchScripture = () => {
     const options = { method: "GET", headers: { accept: "application/json" } };
     fetch(
@@ -68,6 +69,7 @@ const HomeScreen = () => {
       .catch((error) => console.log(error));
   };
 
+  // Add gratitude to db
   const addGratitude = () => {
     addDoc(collection(db, "gratitudes"), {
       user: user.uid,
@@ -83,6 +85,8 @@ const HomeScreen = () => {
         alert(error.message);
       });
   };
+
+  // Retrive Gratitudes from db
   const getGratitudes = async () => {
     await getDocs(q).then((querySnapshot) => {
       const newData = querySnapshot.docs.map((doc) => ({
@@ -104,6 +108,7 @@ const HomeScreen = () => {
       .catch((error) => console.log(error));
   };
 
+  //Delete Gratitude
   const deleteGratitude = (id) => {
     deleteDoc(doc(db, "gratitudes", id))
       .then(getGratitudes())
@@ -141,10 +146,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     getGratitudes();
-
     fetchScripture();
-
-    /*  return () => unsub(); */
   }, []);
 
   return loading ? (
